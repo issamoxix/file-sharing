@@ -7,11 +7,19 @@
     <title>Upload File</title>
 </head>
 
+
 <body>
-    <form action="http://<localip>/upload" method="post" enctype="multipart/form-data">
+    <form id="upload-form" method="post" enctype="multipart/form-data">
         <input type="file" name="file" />
         <input type="submit" />
     </form>
 </body>
+<script>
+    var uploadForm = document.getElementById("upload-form")
+    fetch("./address.txt")
+        .then((d) => d.text())
+        .then((value) => uploadForm.setAttribute("action", `http://${value}/upload`))
+
+</script>
 
 </html>
