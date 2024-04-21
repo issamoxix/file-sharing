@@ -42,6 +42,10 @@ func checker(e error) {
 
 func main() {
 	var port string = "80"
+	if _, err := os.Stat("./uploads"); os.IsNotExist(err) {
+		err := os.Mkdir("./uploads", 0755)
+		checker(err)
+	}
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/upload", uploadHandler)
 	log.Println("Starting the server on :" + port)
