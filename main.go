@@ -10,7 +10,6 @@ import (
 )
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
-	// Handle upload endpoint
 	if r.Method != "POST" {
 		http.Error(w, "Only Post requests are allowed", http.StatusBadRequest)
 		return
@@ -31,14 +30,12 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(dst, file)
 	checker(err)
 
-	w.WriteHeader(http.StatusOK)
+	http.Redirect(w, r, "/", http.StatusFound)
 	w.Write([]byte("File Successfully uploaded"))
 
 }
 
 func GetLocalIPs() []net.IP {
-	// Getting All Local Ips
-	// It returns list of local ips
 	var ips []net.IP
 	addresses, err := net.InterfaceAddrs()
 	checker(err)
