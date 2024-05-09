@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -10,28 +11,33 @@ import (
 )
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Only Post requests are allowed", http.StatusBadRequest)
+	r.ParseMultipartForm(32 << 20)
+
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		fmt.Println("Error retrieving file from form data:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	uploadedFile, err := os.Create("./uploads/" + handler.Filename)
+	if err != nil {
+		fmt.Println("Error creating file on server:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer uploadedFile.Close()
+
+	_, err = io.Copy(uploadedFile, file)
+	if err != nil {
+		fmt.Println("Error copying file data:", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	file, header, err := r.FormFile("file")
-
-	checker(err)
-
-	defer file.Close()
-
-	log.Printf("Uploaded file: %+v\n", header.Filename)
-
-	dst, err := os.Create("./uploads/" + header.Filename)
-	checker(err)
-
-	defer dst.Close()
-	_, err = io.Copy(dst, file)
-	checker(err)
-
-	http.Redirect(w, r, "/", http.StatusFound)
-	w.Write([]byte("File Successfully uploaded"))
+	fmt.Println("File uploaded successfully:", handler.Filename)
+	w.WriteHeader(http.StatusOK)
 
 }
 

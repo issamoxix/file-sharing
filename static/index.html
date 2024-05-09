@@ -10,16 +10,56 @@
 
 <body>
     <form id="upload-form" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" />
-        <input type="submit" />
+        <input type="file" name="file" id="fileInput" />
+        <input type="submit" onclick="uploadFile()" />
     </form>
+    <div id="progress"></div>
 </body>
+<script>
+
+</script>
+
 <script>
     var uploadForm = document.getElementById("upload-form")
     fetch("./address.txt")
         .then((d) => d.text())
         .then((value) => uploadForm.setAttribute("action", `http://${value}/upload`))
 
+    function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Please select a file.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', uploadForm.getAttribute("action"));
+        xhr.upload.onprogress = function (event) {
+            if (event.lengthComputable) {
+                const percentComplete = (event.loaded / event.total) * 100;
+                document.getElementById('progress').innerHTML = `Upload Progress: ${percentComplete.toFixed(2)}%`;
+            }
+        };
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                alert('File uploaded successfully!');
+                document.getElementById('progress').innerHTML = 'Upload Complete!';
+            } else {
+                alert('Error uploading file. Please try again.');
+            }
+        };
+
+        xhr.onerror = function () {
+            alert('Error uploading file. Please try again.');
+        };
+
+        xhr.send(formData);
+    }
 </script>
 
 </html>
